@@ -1,0 +1,100 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.ws.klijenti;
+
+import java.util.List;
+import org.foi.nwtis.igradiski.ws.serveri.Aerodrom;
+import org.foi.nwtis.igradiski.ws.serveri.AvionLeti;
+import org.foi.nwtis.igradiski.ws.serveri.LetPozicija;
+import org.foi.nwtis.podaci.Korisnik;
+import org.foi.nwtis.rest.podaci.MeteoPodaci;
+
+
+
+/**
+ * 2.3
+ * @author Korisnik
+ */
+public class Zadaca2_1WS {
+
+    public List<Aerodrom> dajAerodromeKorisnika(String korisnik, String lozinka) {
+        List<Aerodrom> aerodromi = null;
+
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            aerodromi = port.mojiAerodromi(korisnik, lozinka);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return aerodromi;
+    }
+    public boolean provjeraKorisnika(String korisnik, String lozinka){
+        boolean postoji=false;
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            postoji= port.provjeraKorisnika(korisnik, lozinka);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return postoji;
+    }
+    public boolean dodajKorisnika(String username, String lozinka, String ime, String prezime, String mail) {
+        boolean dodan = false;
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port(); 
+        Korisnik k = new Korisnik(username, ime, prezime, lozinka, mail, null, null);
+        org.foi.nwtis.igradiski.ws.serveri.Korisnik noviKorisnik =  new org.foi.nwtis.igradiski.ws.serveri.Korisnik();
+        noviKorisnik.setKorIme(username);
+        noviKorisnik.setIme(ime);
+        noviKorisnik.setLozinka(lozinka);
+        noviKorisnik.setPrezime(prezime);
+        noviKorisnik.setEmailAdresa(mail);
+        dodan = port.dodajKorisnika(noviKorisnik, lozinka);
+        return dodan;
+    }
+    
+    public Aerodrom preuzmiLokacijuLIQKlijent(String korisnik,String lozinka,String icao){
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+        org.foi.nwtis.igradiski.ws.serveri.Aerodrom aerodrom = port.dajTrazeniAerodromLokacija(korisnik, lozinka, icao);
+        return aerodrom;
+    }
+    
+    public org.foi.nwtis.igradiski.ws.serveri.MeteoPodaci preuzmiTemperaturu(String korisnik,String lozinka,String sirina,String duzina){
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+        org.foi.nwtis.igradiski.ws.serveri.MeteoPodaci mp =port.preuzmiTemperaturu(korisnik, lozinka, sirina, duzina);
+        return mp;
+                
+    }
+    
+    public List<AvionLeti> poletjeliAvioniAerodrom(String korisnik, String lozinka,String icao, long od, long doKad){
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+        List<AvionLeti> avioni = port.poletjeliAvioniAerodrom(korisnik, lozinka, icao, od, doKad);
+        return avioni;
+    }
+    public LetPozicija dajVisinuLokacijuAviona(String korisnik,String lozinka,String icao, long vrijeme){
+        LetPozicija lp = new LetPozicija();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+        lp=port.dajVisinuLokacijuAviona(korisnik, lozinka, icao, vrijeme);
+        return lp;
+    }
+    
+    
+    
+    
+    
+     
+    
+    
+    
+}

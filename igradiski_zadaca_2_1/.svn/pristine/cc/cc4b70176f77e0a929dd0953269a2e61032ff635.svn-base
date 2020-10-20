@@ -1,0 +1,176 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.web.dretve;
+
+
+import com.sun.xml.wss.util.DateUtils;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.foi.nwtis.igradiski.konfiguracije.bp.BP_Konfiguracija;
+import org.foi.nwtis.igradiski.web.podaci.AirportDAO;
+import org.foi.nwtis.podaci.Airport;
+import org.foi.nwtis.rest.klijenti.OSKlijent;
+import org.foi.nwtis.rest.podaci.AvionLeti;
+
+/**
+ *
+ * @author Korisnik
+ */
+public class PreuzimanjeLetovaAvionaAerodroma extends Thread{
+    
+    private BP_Konfiguracija konf;
+    
+    //TODO potrebne varijable/atributi
+    private OSKlijent klijentOS;
+    private String korisnickoImeOS="";
+    private String lozinkaOS="";
+    private Timestamp datumPreuzimanja;
+    private Timestamp doDatum;
+    private int trajanjePauze=0;
+    private int trajanjeCiklusaDretve=0;
+    boolean krajPreuzimanja=false;
+    private String bpkorisnik="";
+    private String bplozinka="";
+    private String url="";
+
+    public PreuzimanjeLetovaAvionaAerodroma(BP_Konfiguracija konf) {
+        this.konf = konf;
+    }
+    
+    
+    @Override
+    public void interrupt() {
+        super.interrupt();
+    }
+
+    @Override
+    public void run() {
+       int brojac =0;
+       IzracunajDatumDo();
+       while(!krajPreuzimanja){
+           System.out.println("Brojac: "+ brojac);
+            try {
+                 SveFunkcijeDretve();
+                Thread.sleep(trajanjeCiklusaDretve);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(PreuzimanjeLetovaAvionaAerodroma.class.getName()).log(Level.SEVERE, null, ex);
+            }
+       }
+    }
+
+    @Override
+    public synchronized void start() {
+        PreuzmiKonfiguraciju();
+        IzracunajDatumDo();
+        PreuzmiPodatkeZaBazu();
+        super.start(); //To change body of generated methods, choose Tools | Templates.
+    }
+    private void PreuzmiPodatkeZaBazu(){
+        bpkorisnik= konf.getUserUsername();
+        bplozinka= konf.getUserPassword();
+        url = konf.getServerDatabase()+konf.getUserDatabase();
+    }
+    
+    public void PreuzmiKonfiguraciju(){
+        korisnickoImeOS= konf.getKonfig().dajPostavku("OpenSkyNetwork.korisnik");
+        lozinkaOS=konf.getKonfig().dajPostavku("OpenSkyNetwork.lozinka");
+        trajanjePauze=Integer.parseInt(konf.getKonfig().dajPostavku("preuzimanje.pauza"));
+        trajanjeCiklusaDretve =Integer.parseInt(konf.getKonfig().dajPostavku("preuzimanje.ciklus"));
+        String datumPreuzimanjaStr=konf.getKonfig().dajPostavku("preuzimanje.pocetak");
+        ObradiDatumPreuzimanja(datumPreuzimanjaStr);     
+        if(ProvjeriAtribute()){
+           KreirajOSKlijenta();
+        }
+       
+    }
+    public boolean ProvjeriAtribute(){
+        boolean atributiTocni=true;
+        if(korisnickoImeOS.isEmpty() || korisnickoImeOS ==null){
+            atributiTocni = false;
+        }
+        if(lozinkaOS.isEmpty() || lozinkaOS ==null){
+            atributiTocni = false;
+        }
+        return atributiTocni;
+    }
+    
+    public void KreirajOSKlijenta(){
+        klijentOS = new OSKlijent(korisnickoImeOS, lozinkaOS);
+        
+    }
+
+    private void ObradiDatumPreuzimanja(String datumPreuzimanjaStr) {
+        //01.01.2020
+        //30.04.2020
+        try {
+            SimpleDateFormat formatter=new SimpleDateFormat("dd.MM.yyyy");
+            Date date = formatter.parse(datumPreuzimanjaStr);
+            Timestamp timeStampDate = new Timestamp(date.getTime());
+            System.out.println(timeStampDate.toString());
+            datumPreuzimanja = timeStampDate;
+        } catch (Exception e) {
+            System.out.println("Exception :" + e);
+
+        }
+
+    }
+
+    private void IzracunajDatumDo() {
+        int dan = 86400000;
+        Timestamp danDo= new Timestamp(datumPreuzimanja.getTime()+dan);
+        doDatum=danDo;
+        String a = "";
+    }
+
+    private void SveFunkcijeDretve() {
+        //preuzmi aerodrome koji su u my airports 
+        DohvatiPodatkeAerodroma();
+        
+        //a za svaki dan preuzeti avion i u airports log napisat dan i aerodrom za koji su preuzeti
+        //TODO Preuzimanje aerodroma, i za aerodrome avione za pojedini dan
+    }
+    private void DohvatiPodatkeAerodroma(){
+        ArrayList<Airport> aerodromi = PreuzmiAerodromeKorisnika();
+        boolean aerodromPostoji=false;
+        for(Airport airport : aerodromi){
+            AirportDAO airportDao = new AirportDAO(konf);
+            Date datum=new Date(datumPreuzimanja.getTime()); 
+            aerodromPostoji=airportDao.ProvjeriPostojanjeAvionaUBazi(airport,datum);
+            if(!aerodromPostoji){
+                //dodaj ga i preuzmi podatke
+                PreuzmiPodatkeZaAerodrom(airport);
+                UpisiDaJeAerodromPreuzet(airport,datumPreuzimanja);
+            }
+        }
+    }
+    private void UpisiDaJeAerodromPreuzet(Airport aerodrom, Timestamp datum){
+        AirportDAO airportDao = new AirportDAO(konf);
+        airportDao.UpisiAerodromULog(aerodrom, datum);
+    }
+    private void PreuzmiPodatkeZaAerodrom(Airport airport){
+        List<AvionLeti> listaAviona= klijentOS.getDepartures(airport.getIdent(), datumPreuzimanja, doDatum);
+        AirportDAO airportDao = new AirportDAO(konf);
+        for(AvionLeti avion : listaAviona){
+            airportDao.DodajAvionUBazu(avion);
+        }
+    }
+    
+    private ArrayList<Airport> PreuzmiAerodromeKorisnika() {
+        AirportDAO airportDao = new AirportDAO(konf);
+        ArrayList<String> aerodromiIdent = new ArrayList<String>();
+        aerodromiIdent = airportDao.dajSveIdenteAerodromeKorisnika(konf);
+        ArrayList<Airport> aerodromi = airportDao.dajAerodromePrekoIdenta(aerodromiIdent);
+        return aerodromi;
+    }
+    
+
+
+}

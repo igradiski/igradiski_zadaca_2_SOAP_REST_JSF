@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Dodavanje aerodroma</title>
+    </h:head>
+    <h:body>
+        <h2>Dodavanje aerodroma</h2>
+        <h:form>
+            <h:outputLabel>Naziv: </h:outputLabel>&nbsp;
+            <h:inputText value="#{dodavanjeAerodroma.naziv}"/>&nbsp;
+            <h:commandButton value="Pretraži po nazivu " action="#{dodavanjeAerodroma.dajAerodromaNaziv()}"/><br></br><br></br>
+            
+            <h:outputLabel>Drzava: </h:outputLabel>&nbsp;
+            <h:inputText value="#{dodavanjeAerodroma.drzava}"/>&nbsp;
+            <h:commandButton value="Pretraži podrzavi " action="#{dodavanjeAerodroma.dajAerodromaDrzava()}"/><br></br><br></br>
+            
+            <p:dataTable value ="#{dodavanjeAerodroma.aerodromi}" var="a" rows="5" 
+                         paginator="true"
+                         
+                         rowsPerPageTemplate="5,10,50,100">
+                <p:column>  
+                    <f:facet name="header">ICAO</f:facet>#{a.icao}
+                </p:column>
+                 <p:column>  
+                     <f:facet name="header">Naziv</f:facet>#{a.naziv}
+                </p:column>
+                 <p:column>  
+                     <f:facet name="header">Drzava</f:facet>#{a.drzava}
+                </p:column>
+                
+                <p:column>
+                    <p:commandButton value="Dodaj aerodrom" action ="#{dodavanjeAerodroma.dodajAerodromKorisniku(a.icao)}"/>
+                </p:column>
+            </p:dataTable>
+            
+            
+            
+            <h:panelGrid columns="2">
+                
+            <h:selectOneListbox> 
+                <f:selectItems  value="#{dodavanjeAerodroma.aerodromiKorisnika}" var="a" itemLabel="#{a.naziv}" itemValue="#{a.icao}"/>
+            </h:selectOneListbox>
+            <h:commandButton value="Obrisi aerodrome korisnika" action="#{dodavanjeAerodroma.obrisiAerodromeKorisnika()}"/>   
+                
+                
+            </h:panelGrid>
+           
+        </h:form>
+    </h:body>
+</html>
+

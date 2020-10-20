@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Prijava korisnika</title>
+    </h:head>
+
+    <h:body>
+        <h:form>
+            <p:growl />
+
+            <div  align="center" style="width: 400px">
+                <p:panel>
+                    <f:facet name="header">Prijava korisnika</f:facet>
+                    <h:panelGrid columns="2">
+                        Korisnicko ime:
+                        <h:inputText  id="username" value="#{prijavaKorisnika.korisnik}"/>&nbsp;
+                        Lozinka:
+                        <h:inputSecret id="password" value="#{prijavaKorisnika.lozinka}"/>&nbsp;
+
+                    </h:panelGrid>
+                    <p:commandButton value="#{prijavaKorisnika.login}" action="#{prijavaKorisnika.prijaviSe()}"/>
+                    <br></br><br></br><br></br><br></br>
+                    <p:commandButton value="Nazad" style="size: 50%" action="#{prijavaKorisnika.VratiNazad()}"/>
+                </p:panel>
+            </div>
+        </h:form>     
+    </h:body>
+
+</html>
+

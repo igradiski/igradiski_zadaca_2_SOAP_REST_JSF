@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI (http://jax-ws.java.net). RI's version is Metro/2.4.3 (RELEASE-2.4.3-ad3323c; 2019-01-21T17:46:06+0000) JAXWS-RI/2.3.2 JAXWS-API/2.3.2 JAXB-RI/2.3.2 JAXB-API/2.3.2 git-revision#unknown. --><xs:schema xmlns:tns="http://serveri.ws.igradiski.nwtis.foi.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://serveri.ws.igradiski.nwtis.foi.org/">
+
+<xs:element name="dajAerodromeKOrisnika" type="tns:dajAerodromeKOrisnika"/>
+
+<xs:element name="dajAerodromeKOrisnikaResponse" type="tns:dajAerodromeKOrisnikaResponse"/>
+
+<xs:element name="dajAerodromeNaziv" type="tns:dajAerodromeNaziv"/>
+
+<xs:element name="dajAerodromeNazivResponse" type="tns:dajAerodromeNazivResponse"/>
+
+<xs:element name="dodajKorisnika" type="tns:dodajKorisnika"/>
+
+<xs:element name="dodajKorisnikaResponse" type="tns:dodajKorisnikaResponse"/>
+
+<xs:element name="najvecaVisinaLetaAviona" type="tns:najvecaVisinaLetaAviona"/>
+
+<xs:element name="najvecaVisinaLetaAvionaResponse" type="tns:najvecaVisinaLetaAvionaResponse"/>
+
+<xs:complexType name="dajAerodromeNaziv">
+<xs:sequence>
+<xs:element name="noviKorisnik" type="xs:string" minOccurs="0"/>
+<xs:element name="lozinka" type="xs:string" minOccurs="0"/>
+<xs:element name="naziv" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dajAerodromeNazivResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:aerodrom" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="aerodrom">
+<xs:sequence>
+<xs:element name="drzava" type="xs:string" minOccurs="0"/>
+<xs:element name="icao" type="xs:string" minOccurs="0"/>
+<xs:element name="lokacija" type="tns:lokacija" minOccurs="0"/>
+<xs:element name="naziv" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="lokacija">
+<xs:sequence>
+<xs:element name="latitude" type="xs:string" minOccurs="0"/>
+<xs:element name="longitude" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="najvecaVisinaLetaAviona">
+<xs:sequence>
+<xs:element name="korisnik" type="xs:string" minOccurs="0"/>
+<xs:element name="lozinka" type="xs:string" minOccurs="0"/>
+<xs:element name="icao24" type="xs:string" minOccurs="0"/>
+<xs:element name="zaVrijeme" type="xs:long"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="najvecaVisinaLetaAvionaResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:letPozicija" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="letPozicija">
+<xs:sequence>
+<xs:element name="baro_altitude" type="xs:float"/>
+<xs:element name="latitude" type="xs:float"/>
+<xs:element name="longitude" type="xs:float"/>
+<xs:element name="on_ground" type="xs:boolean"/>
+<xs:element name="time" type="xs:int"/>
+<xs:element name="true_track" type="xs:float"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dajAerodromeKOrisnika">
+<xs:sequence>
+<xs:element name="noviKorisnik" type="xs:string" minOccurs="0"/>
+<xs:element name="lozinka" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dajAerodromeKOrisnikaResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:aerodrom" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dodajKorisnika">
+<xs:sequence>
+<xs:element name="noviKorisnik" type="tns:korisnik" minOccurs="0"/>
+<xs:element name="lozinka" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="korisnik">
+<xs:sequence>
+<xs:element name="datumKreiranja" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="datumPromjene" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="emailAdresa" type="xs:string" minOccurs="0"/>
+<xs:element name="ime" type="xs:string" minOccurs="0"/>
+<xs:element name="korIme" type="xs:string" minOccurs="0"/>
+<xs:element name="lozinka" type="xs:string" minOccurs="0"/>
+<xs:element name="prezime" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dodajKorisnikaResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:boolean"/>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

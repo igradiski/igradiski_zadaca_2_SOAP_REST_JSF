@@ -1,0 +1,299 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.web.podaci;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.foi.nwtis.igradiski.konfiguracije.Konfiguracija;
+import org.foi.nwtis.igradiski.konfiguracije.bp.BP_Konfiguracija;
+import org.foi.nwtis.podaci.Korisnik;
+
+
+public class KorisnikDAO {
+    
+    public Korisnik dohvatiKorisnika(String korisnik, String lozinka, Boolean prijava, BP_Konfiguracija bpk) {
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        String upit = "SELECT IME, PREZIME, EMAIL_ADRESA, KOR_IME, LOZINKA FROM korisnici WHERE "
+                + "KOR_IME = '" + korisnik + "'";
+        
+        if(prijava) {
+            upit += " and LOZINKA = '" + lozinka + "'";
+        }
+
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement();
+                    ResultSet rs = s.executeQuery(upit)) {
+
+                while (rs.next()) {
+                    String korisnik1 = rs.getString("kor_ime");
+                    String ime = rs.getString("ime");
+                    String prezime = rs.getString("prezime");
+                    String email = rs.getString("email_adresa");
+                    Timestamp kreiran = rs.getTimestamp("datum_kreiranja");
+                    Timestamp promjena = rs.getTimestamp("datum_promjene");
+                    Korisnik k = new Korisnik(korisnik1, ime, prezime,"******", email,kreiran,promjena);
+                    return k;
+                }
+
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public List<Korisnik> dohvatiKorisnikeKojiImajuAerodrome(String username,BP_Konfiguracija bpk){
+        List<Korisnik> lista = new ArrayList<>();
+        String upit = "SELECT DISTINCT USERNAME FROM MYAIRPORTS";
+        List<String> imenaKorisnika = dohvatiImenaKorisnika(upit,bpk);
+        for(String ime: imenaKorisnika){
+            lista.add(DohvatiKorisnika(ime,bpk));
+        }
+        return lista;
+    }
+    
+    public List<Korisnik> dohvatiSveKorisnike(String username ,BP_Konfiguracija bpk){
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        List<Korisnik> lista = new ArrayList<Korisnik>();
+        String upit = "SELECT * FROM KORISNICI";
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement();
+                    ResultSet rs = s.executeQuery(upit)) {
+                    while(rs.next()){
+                       lista.add(kreirajKorisnika(rs));
+                    }
+                    
+                    con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+    public Korisnik DohvatiKorisnika(String ime,BP_Konfiguracija bpk ){
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        String upit = "SELECT * FROM KORISNICI WHERE KOR_IME='"+ime+"'"; 
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement();
+                    ResultSet rs = s.executeQuery(upit)) {
+                    while(rs.next()){
+                        return kreirajKorisnika(rs);
+                    }
+                    
+                    con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        return null;
+    }
+    public Korisnik kreirajKorisnika(ResultSet rs) {
+        try {
+            String korisnik1 = rs.getString("kor_ime");
+            String ime = rs.getString("ime");
+            String prezime = rs.getString("prezime");
+            String email = rs.getString("email_adresa");
+            Timestamp kreiran = rs.getTimestamp("datum_kreiranja");
+            Timestamp promjena = rs.getTimestamp("datum_promjene");
+            Korisnik k = new Korisnik(korisnik1, ime, prezime, "******", email, kreiran, promjena);
+            return k;
+        } catch (SQLException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public List<String> dohvatiImenaKorisnika(String upit,BP_Konfiguracija bpk){
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        List<String> lista = new ArrayList<>();
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement();
+                    ResultSet rs = s.executeQuery(upit)) {
+                    while(rs.next()){
+                        String username = rs.getString("USERNAME");
+                        lista.add(username);
+                    }
+                    
+                    con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+    
+    
+    public boolean provjeraKorisnika(String username, String password,BP_Konfiguracija bpk){
+        boolean postoji= false;
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        String upit ="SELECT * FROM KORISNICI WHERE KOR_IME='"+username+"' AND LOZINKA='"+password+"'";
+        postoji = ProvjeriPostojanje(upit, url, bpkorisnik, bplozinka,bpk);
+        return postoji;
+    }
+    public boolean ProvjeriPostojanje(String upit,String url, String bpkorisnik, String bplozinka,BP_Konfiguracija bpk){
+        boolean postoji =false;
+        int brojac=0;
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement();
+                    ResultSet rs = s.executeQuery(upit)) {
+                    while(rs.next()){
+                        brojac++;
+                    }
+                    if(brojac>0){
+                        postoji=true;
+                    }      
+                    con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return postoji;
+    }
+    
+    public String provjeriLozinku(Korisnik k) {
+        String upit = "";
+        if (k.getLozinka() == null || k.getLozinka().isEmpty()) {
+            upit = "UPDATE korisnici SET IME = '" + k.getIme() + "', PREZIME = '" + k.getPrezime()
+                    + "', EMAIL_ADRESA = '" + k.getEmailAdresa() + "' WHERE "
+                    + "KOR_IME = '" + k.getKorIme() + "'";
+        } else {
+            upit = "UPDATE korisnici SET IME = '" + k.getIme() + "', PREZIME = '" + k.getPrezime()
+                    + "', EMAIL_ADRESA = '" + k.getEmailAdresa() + "', LOZINKA = '" + k.getLozinka() + "' WHERE "
+                    + "KOR_IME = '" + k.getKorIme() + "'";
+        }
+        return upit;
+    }
+    public boolean azuriranjeKorisnikaBaza(Korisnik k,String username, String lozinka, BP_Konfiguracija bpk){
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        String upit = provjeriLozinku(k);
+        
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement()) {
+
+                int brojAzuriranja = s.executeUpdate(upit);
+                
+                return brojAzuriranja == 1;
+                
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    
+    public boolean azurirajKorisnika(Korisnik k,String username, String lozinka, BP_Konfiguracija bpk) {
+        if(provjeraKorisnika(username, lozinka, bpk)){
+            //izvrsi update
+            return azuriranjeKorisnikaBaza(k, username, lozinka, bpk);
+        }
+        else{
+            //ne postoji
+            return false;
+        }
+        
+    }
+    public boolean provjeraKorisnika(Korisnik k){
+        boolean tocno = true;
+        if(k.getIme() ==null || k.getIme().isEmpty())
+            tocno=false;
+        if(k.getPrezime() ==null || k.getPrezime().isEmpty())
+            tocno=false;
+        if(k.getKorIme() ==null || k.getKorIme().isEmpty())
+            tocno=false;
+        if(k.getLozinka() ==null || k.getLozinka().isEmpty())
+            tocno=false;
+        return tocno;
+    }
+    public boolean unosKorisnika(Korisnik k,String lozinka, BP_Konfiguracija bpk){
+        String url = bpk.getServerDatabase() + bpk.getUserDatabase();
+        String bpkorisnik = bpk.getUserUsername();
+        String bplozinka = bpk.getUserPassword();
+        String upit = "INSERT INTO korisnici (IME, PREZIME, EMAIL_ADRESA, KOR_IME, LOZINKA, DATUM_KREIRANJA, DATUM_PROMJENE) VALUES ("
+                + "'" + k.getIme() + "', '" + k.getPrezime() + 
+                "', '" + k.getEmailAdresa() + "', '" + k.getKorIme() + "', '" + k.getLozinka() + "', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+        try {
+            Class.forName(bpk.getDriverDatabase(url));
+            try (
+                    Connection con = DriverManager.getConnection(url, bpkorisnik, bplozinka);
+                    Statement s = con.createStatement()) {
+                int brojAzuriranja = s.executeUpdate(upit);
+                return brojAzuriranja == 1;
+                
+            } catch (SQLException ex) {
+                Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(KorisnikDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    
+    public boolean dodajKorisnika(Korisnik k, String lozinka, BP_Konfiguracija bpk) {
+        boolean uspioUnos=false;
+        if(provjeraKorisnika(k)){
+            uspioUnos=unosKorisnika(k,lozinka,bpk);
+        }
+        else{
+               System.out.println("Podaci nisu ispravni!"); 
+         }
+        return uspioUnos;
+    }
+
+    
+
+    
+}

@@ -1,0 +1,64 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.ws.klijenti;
+
+import java.util.List;
+import org.foi.nwtis.igradiski.ws.serveri.Aerodrom;
+import org.foi.nwtis.podaci.Korisnik;
+
+
+
+/**
+ * 2.3
+ * @author Korisnik
+ */
+public class Zadaca2_1WS {
+
+    public List<Aerodrom> dajAerodromeKorisnika(String korisnik, String lozinka) {
+        List<Aerodrom> aerodromi = null;
+
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            aerodromi = port.mojiAerodromi(korisnik, lozinka);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return aerodromi;
+    }
+    public boolean provjeraKorisnika(String korisnik, String lozinka){
+        boolean postoji=false;
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            postoji= port.provjeraKorisnika(korisnik, lozinka);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return postoji;
+    }
+    public boolean dodajKorisnika(String username, String lozinka, String ime, String prezime, String mail) {
+        boolean dodan = false;
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+        org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port(); 
+        Korisnik k = new Korisnik(username, ime, prezime, lozinka, mail, null, null);
+        org.foi.nwtis.igradiski.ws.serveri.Korisnik noviKorisnik =  new org.foi.nwtis.igradiski.ws.serveri.Korisnik();
+        noviKorisnik.setKorIme(username);
+        noviKorisnik.setIme(ime);
+        noviKorisnik.setLozinka(lozinka);
+        noviKorisnik.setPrezime(prezime);
+        noviKorisnik.setEmailAdresa(mail);
+        dodan = port.dodajKorisnika(noviKorisnik, lozinka);
+        return dodan;
+    }
+    
+     
+    
+    
+    
+}

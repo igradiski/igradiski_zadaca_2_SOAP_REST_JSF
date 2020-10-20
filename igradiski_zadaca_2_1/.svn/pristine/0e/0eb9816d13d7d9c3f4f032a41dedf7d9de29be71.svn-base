@@ -1,0 +1,261 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.ws.serveri;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+import javax.jws.WebService;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.servlet.ServletContext;
+import org.foi.nwtis.igradiski.konfiguracije.bp.BP_Konfiguracija;
+import org.foi.nwtis.igradiski.web.podaci.AirportDAO;
+import org.foi.nwtis.igradiski.web.podaci.KorisnikDAO;
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.podaci.Airport;
+import org.foi.nwtis.podaci.Korisnik;
+import org.foi.nwtis.rest.klijenti.OSKlijent;
+import org.foi.nwtis.rest.podaci.AvionLeti;
+import org.foi.nwtis.rest.podaci.AvionLetiPozicije;
+import org.foi.nwtis.rest.podaci.LetPozicija;
+import org.foi.nwtis.rest.podaci.Lokacija;
+
+/**
+ *
+ * @author Korisnik
+ */
+@WebService(serviceName = "Zadaca2")
+public class Zadaca2 {
+
+    @Inject
+    ServletContext context;
+
+    /**
+     * This is a sample web service operation
+     *
+     * @param noviKorisnik
+     * @param lozinka
+     * @return
+     */
+    @WebMethod(operationName = "dodajKorisnika")
+    public boolean dodajKorisnika(@WebParam(name = "noviKorisnik") Korisnik noviKorisnik, @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        String pass = noviKorisnik.getLozinka();
+        return korisnikDAO.dodajKorisnika(noviKorisnik, pass, bpk);
+    }
+    @WebMethod(operationName = "korisniciAerodroma")
+    public List<Korisnik> korisniciAerodroma(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        List<Korisnik> lista = new ArrayList<>();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            lista= korisnikDAO.dohvatiKorisnikeKojiImajuAerodrome(korisnik,bpk);
+        }
+        return lista;   
+    }
+    
+    @WebMethod(operationName = "sviKorisnici")
+    public List<Korisnik> sviKorisnici(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        List<Korisnik> lista = new ArrayList<>();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            lista= korisnikDAO.dohvatiSveKorisnike(korisnik,bpk);
+        }
+        return lista;   
+    }
+    
+    @WebMethod(operationName = "imamAerodrom")
+    public boolean imamAerodrom(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "icao") String icao) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        AirportDAO airportDAO = new AirportDAO(bpk);
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            return airportDAO.provjeriPripadanostKolekciji(korisnik,icao);
+        }
+        else{
+            return false;
+        }
+        
+    }
+    @WebMethod(operationName = "dajTrazeniAerodrom")
+    public Aerodrom dajTrazeniAerodrom(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "icao") String icao) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        AirportDAO airportDAO = new AirportDAO(bpk);
+        Aerodrom a = new Aerodrom();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            a=airportDAO.dajTrenutniAerodrom(korisnik, icao);
+        }
+        return a;
+    }
+    @WebMethod(operationName = "dodajMojAerodrom")
+    public boolean dodajMojAerodrom(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "icao") String icao) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        AirportDAO airportDAO = new AirportDAO(bpk);
+        boolean dodano=false;
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            dodano=airportDAO.dodajAerodromVlastitim(korisnik,icao);
+        }
+        return dodano;
+    }
+    
+    @WebMethod(operationName = "poletjeliAvioniAerodrom")
+    public List<AvionLeti> poletjeliAvioniAerodrom(@WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "icao") String icao,
+            @WebParam(name = "od") long od,
+            @WebParam(name = "do") long doKad) {
+        List<AvionLeti> lista = new ArrayList<AvionLeti>();
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        AirportDAO airportDAO = new AirportDAO(bpk);
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            lista=airportDAO.dohvatiPolijetanja(icao,od,doKad);
+        }
+        return lista;
+    }
+    
+    
+    
+    
+    @WebMethod(operationName = "dohvatiAerodromeNaziv")
+    public List<Aerodrom> dohvatiAerodromeNaziv(@WebParam(name = "korisnik") String korisnik, @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "naziv") String naziv) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        AirportDAO airportDao = new AirportDAO(bpk);
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            List<Aerodrom> lista = airportDao.dajAerodrome(naziv);
+            if (lista == null || lista.isEmpty()) {
+                return null;
+            } else {
+                return lista;
+            }
+        } else {
+            return null;
+        }
+    }
+     @WebMethod(operationName = "dohvatiAerodromeDrzava")
+    public List<Aerodrom> dohvatiAerodromeDrzava(@WebParam(name = "korisnik") String korisnik, @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "iso_drzave") String drzava) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        AirportDAO airportDao = new AirportDAO(bpk);
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+            List<Aerodrom> lista = airportDao.dajAerodromeDrzava(drzava);
+            if (lista == null || lista.isEmpty()) {
+                return null;
+            } else {
+                return lista;
+            }
+        } else {
+            return null;
+        }
+    }
+    
+    
+    @WebMethod(operationName = "azurirajKorisnika")
+    public boolean azurirajKorisnika(@WebParam(name = "azuriraniKorisnik") Korisnik noviKorisnik,
+            @WebParam(name = "korisnik") String korisnik, 
+            @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        return korisnikDAO.azurirajKorisnika(noviKorisnik,korisnik, lozinka, bpk);
+    }
+    
+    @WebMethod(operationName = "provjeraKorisnika")
+    public boolean provjeraKorisnika(@WebParam(name = "korisnik") String korisnik, @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        boolean postoji =false;
+        postoji=korisnikDAO.provjeraKorisnika(korisnik, lozinka,bpk);
+        return postoji;
+    }
+
+    /**
+     * This is a sample web service operation
+     *
+     * @param korisnik
+     * @param icao24
+     * @param zaVrijeme
+     * @param lozinka
+     * @return
+     */
+    @WebMethod(operationName = "najvecaVisinaLetaAviona")
+    public LetPozicija najvecaVisinaLetaAviona(@WebParam(name = "korisnik") String korisnik,
+            @WebParam(name = "lozinka") String lozinka,
+            @WebParam(name = "icao24") String icao24,
+            @WebParam(name = "zaVrijeme") long zaVrijeme) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        String osnKorisnik = bpk.getKonfig().dajPostavku("OpenSkyNetwork.korisnik");
+        String osnLozinka = bpk.getKonfig().dajPostavku("OpenSkyNetwork.lozinka");
+        OSKlijent osKlijent = new OSKlijent(osnKorisnik, osnLozinka);
+        AvionLetiPozicije pozicijeLetaAviona = osKlijent.getTracks(icao24, zaVrijeme);
+        //TODO pronađi najveću visinu leta
+        LetPozicija letPozicija = new LetPozicija();
+        return letPozicija;
+    }
+    
+    
+    
+    /**
+     * This is a sample web service operation
+     *
+     * @param noviKorisnik
+     * @param lozinka
+     * @return
+     */
+    @WebMethod(operationName = "mojiAerodromi")
+    public List<Aerodrom> mojiAerodromi(@WebParam(name = "korisnik") String korisnik,
+            @WebParam(name = "lozinka") String lozinka) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        AirportDAO airportDao = new AirportDAO(bpk);
+        KorisnikDAO korisnikDAO = new KorisnikDAO();
+        List<Aerodrom> aerodromi = new ArrayList<>();
+        if (korisnikDAO.provjeraKorisnika(korisnik, lozinka, bpk)) {
+                    aerodromi= airportDao.dohvatiAerodromeKorisnika(korisnik);
+        }     
+        return aerodromi;
+    }
+    
+    
+    @WebMethod(operationName = "dajAerodromeNaziv")
+    public List<Aerodrom> dajAerodromeNAziv(@WebParam(name = "noviKorisnik") String noviKorisnik,
+            @WebParam(name = "lozinka") String lozinka,@WebParam(name = "naziv") String naziv) {
+        BP_Konfiguracija bpk = (BP_Konfiguracija) context.getAttribute("BP_Konfig");
+        
+        // TODO dodati autentifikaciju korinsika SVAGDE
+        //TODO preuzeti podatke iz baze podataka
+        List<Aerodrom> aerodromi = new ArrayList<>();
+        aerodromi.add(new Aerodrom(
+                "LDAZ", "Zagreb", "HR", new Lokacija("0.0", "0.0")));
+        aerodromi.add(new Aerodrom(
+                "LOWW", "Vienna", "AT", new Lokacija("0.0", "0.0")));
+        aerodromi.add(new Aerodrom(
+                "EDDF", "Frankfurt/M", "AT", new Lokacija("0.0", "0.0")));
+       aerodromi.add(new Aerodrom(
+                "LQSA", "Sarajevo","BA", new Lokacija("0.0", "0.0")));
+       aerodromi.add(new Aerodrom(
+                "OMAA", "aBU DHABI", "AT", new Lokacija("0.0", "0.0")));
+        
+        
+        return aerodromi;
+    }
+    
+    
+}

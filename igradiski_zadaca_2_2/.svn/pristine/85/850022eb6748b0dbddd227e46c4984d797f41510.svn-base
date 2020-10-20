@@ -1,0 +1,218 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.rest.serveri;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.foi.nwtis.igradiski.ws.klijenti.Zadaca2_1WS;
+import org.foi.nwtis.igradiski.ws.serveri.Aerodrom;
+import org.foi.nwtis.podaci.Odgovor;
+
+/**
+ * REST Web Service
+ *
+ * @author Korisnik
+ */
+@Path("aerodromi")
+public class Zadaca2RestAerodromi {
+
+    @Context
+    private UriInfo context;
+
+    /**
+     * Creates a new instance of Zadaca2RestAerodromi
+     */
+    public Zadaca2RestAerodromi() {
+    }
+
+    /**
+     *
+     * Vraća aerodrome koje prati korisnik
+     * 
+     * @param korisnik
+     * @param lozinka
+     * @return
+     */
+    @GET
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response dajAerodomeKorisnika(
+            @HeaderParam("korisnik") String korisnik,
+            @HeaderParam("lozinka") String lozinka) {
+        Zadaca2_1WS zadaca2_1WS = new Zadaca2_1WS();
+        System.out.println("Dohvacanje svih aerodroma");
+        List<Aerodrom> aerodromi = zadaca2_1WS.dajAerodromeKorisnika(korisnik, lozinka);
+        if (aerodromi == null) {
+            aerodromi = new ArrayList<>();
+        }
+        Odgovor odgovor = new Odgovor();
+        odgovor.setStatus("10");
+        odgovor.setPoruka("OK");
+        odgovor.setOdgovor(aerodromi.toArray());
+        return Response
+                .ok(odgovor)
+                .status(200)
+                .build();
+    }
+    /**
+     * Post metoda za dodavanje mog aerodroma
+     * @param korisnik korisnicko ime
+     * @param lozinka lozinka
+     * @param icao icao aerodroma
+     * @return  odgovor o uspjehu
+     */
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response dodajMojAerodrom(
+            @HeaderParam("korisnik") String korisnik,
+            @HeaderParam("lozinka") String lozinka,
+            @QueryParam("icao") String icao) {
+        boolean avionDodan = dodajMojAerodromOperacije(korisnik, lozinka, icao);
+        if (avionDodan) {
+            Odgovor odgovor = new Odgovor();
+            odgovor.setStatus("10");
+            odgovor.setPoruka("OK-DODANO");
+            odgovor.setOdgovor(null);
+            return Response
+                    .ok(odgovor)
+                    .status(200)
+                    .build();
+        } else {
+            Odgovor odgovor = new Odgovor();
+            odgovor.setStatus("40");
+            odgovor.setPoruka("Avion nije dodan");
+            odgovor.setOdgovor(null);
+            return Response
+                    .ok(odgovor)
+                    .status(400)
+                    .build();
+        }
+        
+    }
+    /**
+     * Pozivanje dodavanja aerodoma iz prvog projekta
+     * @param korisnik username
+     * @param lozinka lozinka
+     * @param icao icao aerodroma
+     * @return  true dodan false nije dodan
+     */
+    public boolean dodajMojAerodromOperacije(String korisnik,String lozinka,String icao){
+        boolean avionDodan=false;
+        Zadaca2_1WS zadaca2_1WS = new Zadaca2_1WS();
+        avionDodan = zadaca2_1WS.dodajMojAerodrom(korisnik, lozinka, icao);
+        return avionDodan;
+    }
+    /**
+     * Retrieves representation of an instance of org.foi.nwtis.igradiski.rest.serveri.Zadaca2RestAerodromi
+     * @return an instance of Response
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getJson() {
+       return Response.ok("Hello NWTiS").status(Response.Status.OK).build();
+    }
+
+    /**
+     *
+     * Vraća aerodrome prema nazivu ili drzavi
+     * 
+     * @param korisnik korisnicko ime
+     * @param lozinka lozinka
+     * @return odgovor o uspjehu 
+     */
+    @Path("/svi")
+    @GET
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response dajAerodome(
+            @HeaderParam("korisnik") String korisnik,
+            @HeaderParam("lozinka") String lozinka,
+            @QueryParam("naziv") String naziv,
+            @QueryParam("drzava") String drzava) {
+        List<Aerodrom> aerodromi = new ArrayList<>();
+        aerodromi = dohvatiAerodrome(korisnik, lozinka, naziv, drzava);
+
+        if (aerodromi == null) {
+            aerodromi = new ArrayList<>();
+        }
+        Odgovor odgovor = new Odgovor();
+        odgovor.setStatus("10");
+        odgovor.setPoruka("OK");
+        odgovor.setOdgovor(aerodromi.toArray());
+        return Response
+                .ok(odgovor)
+                .status(200)
+                .build();
+    }
+    
+    
+    /**
+     * dohvaca trazeni aerodrom preko servisa
+     * @param korisnik username
+     * @param lozinka lozinka
+     * @param icao icao aerodroma
+     * @return  vraca odgovor s podacima aerodroma
+     */
+    @GET
+    @Path("{icao}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response dajTrazeniAerodrom(
+            @HeaderParam("korisnik") String korisnik,
+            @HeaderParam("lozinka") String lozinka,
+            @PathParam("icao") String icao) {
+        Zadaca2_1WS zadaca2_1WS = new Zadaca2_1WS();
+        Aerodrom a = zadaca2_1WS.dajTrazeniAerodrom(korisnik, lozinka, icao);
+        List<Aerodrom> aerodromi = new ArrayList<>();
+        aerodromi.add(a);
+        Odgovor odgovor = new Odgovor();
+        odgovor.setStatus("10");
+        odgovor.setPoruka("OK");
+        odgovor.setOdgovor(aerodromi.toArray());
+        return Response
+                .ok(odgovor)
+                .status(200)
+                .build();
+    }
+    /**
+     * Dohvaca aerodrome prena nazivu ili drzavi
+     * @param korisnik username
+     * @param lozinka lozinka
+     * @param naziv naziv drzave
+     * @param drzava drzava
+     * @return 
+     */
+    public List<Aerodrom> dohvatiAerodrome(String korisnik,String lozinka, String naziv,String drzava){
+        List<Aerodrom> aerodromi=new ArrayList<>() ;
+        Zadaca2_1WS zadaca2_1WS = new Zadaca2_1WS();
+        if(naziv==null)
+            naziv="";
+        if(drzava == null)
+            drzava="";
+        if(! naziv.isEmpty() && naziv!=null){
+            aerodromi= zadaca2_1WS.dajAerodromeNaziv(korisnik, lozinka, naziv);
+        }else if(!drzava.isEmpty() && drzava !=null){
+            aerodromi=zadaca2_1WS.dajAerodromeDrzava(korisnik, lozinka, drzava);
+        }
+        else{
+            aerodromi= zadaca2_1WS.dajAerodromeNaziv(korisnik, lozinka,"%");
+        }
+        return aerodromi;
+    }   
+}

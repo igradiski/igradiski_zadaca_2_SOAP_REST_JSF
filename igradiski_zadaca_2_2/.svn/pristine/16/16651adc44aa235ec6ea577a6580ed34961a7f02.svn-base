@@ -1,0 +1,77 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.foi.nwtis.igradiski.ws.klijenti;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.foi.nwtis.igradiski.ws.serveri.Aerodrom;
+
+/**
+ *2.2
+ * @author Korisnik
+ */
+public class Zadaca2_1WS {
+
+    public List<Aerodrom> dajAerodromeKorisnika(String korisnik, String lozinka) {
+        List<Aerodrom> aerodromi = new ArrayList<Aerodrom>();
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            aerodromi = port.mojiAerodromi(korisnik, lozinka);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return aerodromi;
+    }
+    
+    public boolean dodajMojAerodrom(String korisnik,String lozinka, String icao){
+        boolean dodan=false;
+        try {
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            dodan = port.dodajMojAerodrom(korisnik, lozinka, icao);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return dodan;
+    }
+    
+    
+    
+    public List<Aerodrom> dajAerodromeNaziv(String korisnik, String lozinka,String naziv) {
+        List<Aerodrom> aerodromi = null;
+        try { 
+
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            aerodromi = port.dohvatiAerodromeNaziv(korisnik, lozinka, naziv);
+            
+        } catch (Exception ex) {
+             System.out.println(ex.getMessage());
+        }
+
+        return aerodromi;
+        
+     }
+    
+    public List<Aerodrom> dajAerodromeDrzava(String korisnik, String lozinka,String drzava) {
+        List<Aerodrom> aerodromi = null;
+        try { 
+
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service service = new org.foi.nwtis.igradiski.ws.serveri.Zadaca2_Service();
+            org.foi.nwtis.igradiski.ws.serveri.Zadaca2 port = service.getZadaca2Port();
+            aerodromi = port.dohvatiAerodromeDrzava(korisnik, lozinka, drzava);
+            
+        } catch (Exception ex) {
+             System.out.println(ex.getMessage());
+        }
+
+        return aerodromi;
+        
+     }
+}
